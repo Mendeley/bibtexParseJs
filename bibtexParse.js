@@ -30,6 +30,7 @@
         this.pos = 0;
         this.input = "";
         this.entries = new Array();
+        this.errors = [];
 
         this.currentEntry = "";
 
@@ -287,28 +288,37 @@
 
         this.bibtex = function() {
             while (this.matchAt()) {
-                var d = this.directive();
-                this.match("{");
-                if (d == "@STRING") {
-                    this.string();
-                } else if (d == "@PREAMBLE") {
-                    this.preamble();
-                } else if (d == "@COMMENT") {
-                    this.comment();
-                } else {
-                    this.entry(d);
+                try {
+                    var d = this.directive();
+                    this.match("{");
+                    if (d == "@STRING") {
+                        this.string();
+                    } else if (d == "@PREAMBLE") {
+                        this.preamble();
+                    } else if (d == "@COMMENT") {
+                        this.comment();
+                    } else {
+                        this.entry(d);
+                    }
+                    this.match("}");
+                } catch (err) {
+                    this.errors.push(err);
                 }
-                this.match("}");
             };
 
             this.alernativeCitationKey();
         };
     };
-    
-    exports.toJSON = function(bibtex) {
+
+    exports.toJSON = function(bibtex, callback) {
         var b = new BibtexParser();
         b.setInput(bibtex);
         b.bibtex();
+
+        if (callback) {
+            callback(b.errors, b.entries);
+        }
+
         return b.entries;
     };
 
