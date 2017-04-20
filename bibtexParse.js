@@ -302,6 +302,9 @@
                     }
                     this.match("}");
                 } catch (err) {
+                    // remove the malformed entry from the result
+                    this.entries.pop();
+
                     this.errors.push(err);
                 }
             };
